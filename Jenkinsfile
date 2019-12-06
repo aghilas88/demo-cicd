@@ -1,4 +1,11 @@
 pipeline {
+    environment {
+        imageName = "demo-jenkins-ci"
+        imageVersion = "0.0.1-SNAPSHOT"
+        registryUser = "aghilas88"
+        registryCredential = 'docker-hub-credential'
+        dockerImage = ''
+      }
     agent any
     tools {
         maven "maven-3"
@@ -23,8 +30,17 @@ pipeline {
         stage('Build image') {
             steps{
                 script {
-                    def dockerImage = docker.build "agh/demo-jenkins-ci:0.0.1-SNAPSHOT"
+                    dockerImage = docker.build registryUser + "/" + imageName + ":" + imageVersion
                 }
+            }
+        }
+        stage('Deploy Image') {
+            steps{
+                script {
+                    docker.withRegistry( '', registryCredential ) {
+                    dockerImage.push()
+                }
+            }
             }
         }
     }
